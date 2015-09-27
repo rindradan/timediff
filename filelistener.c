@@ -15,6 +15,25 @@ Fileattr* inserttete(Fileattr *filelist, Fileattr *filetoinserttete)
     return filetoinserttete;
 }
 
+void showfilelist(Fileattr *filelist)
+{
+    if (filelist != NULL)
+    {
+        printf("file : '%s', \t\t last_modified : |%d-%d-%d %d:%d:%d|\t %s", filelist->name,
+           filelist->tmdate.tm_mday, filelist->tmdate.tm_mon, filelist->tmdate.tm_year,
+           filelist->tmdate.tm_hour, filelist->tmdate.tm_min, filelist->tmdate.tm_sec,
+           ctime(&filelist->cdate));
+
+           if (filelist->next != NULL)
+           {
+               double difference = difftime(filelist->next->cdate, filelist->cdate);
+               printf("DIFFERENCE = %10.2lf sec\n", difference);
+           }
+
+           showfilelist(filelist->next);
+    }
+}
+
 Fileattr* insertinplace(Fileattr *filelist, Fileattr *filetoinsert, Fileattr *fileprevious, Fileattr *filefinal)
 {
     double difference = 0;
@@ -62,7 +81,6 @@ static Fileattr* listdircontent(char *path, Fileattr *fileattr)
     struct tm* clock;
     struct tm filedate;
     struct stat attrib;
-    char filename[25];
 
     DIR *dirp = finddir(path);
 
@@ -71,6 +89,10 @@ static Fileattr* listdircontent(char *path, Fileattr *fileattr)
         errno = 0;
         if ((dp = readdir(dirp)) != NULL)
         {
+            char filenamepath[200] = "";
+            strcat(filenamepath, path);
+            strcat(filenamepath, dp->d_name);
+
             // check if the object is a file / if it is a directory => errno != 0
             FILE *f = fopen(dp->d_name, "r");
             if(errno == 0)
@@ -80,6 +102,7 @@ static Fileattr* listdircontent(char *path, Fileattr *fileattr)
                 clock = gmtime(&(attrib.st_ctime));
 
                 // save filename in char[]
+                char filename[200];
                 strcpy(filename, dp->d_name);
 
                 if (findinlist(fileattr, filename) == 0)
@@ -99,9 +122,14 @@ static Fileattr* listdircontent(char *path, Fileattr *fileattr)
 
                     //fileattr = insertplace(fileattr, file);
 
-                    fileattr = inserttete(fileattr, file);
+                    fileattr = insertplace(fileattr, file);
 
                     printf("File : '%s' ==> added\n", file->name);
+
+                    printf("\n\n");
+                    printf("**********************************************************************************************************************\n");
+                    showfilelist(fileattr);
+
 
                 }
                 /*
@@ -121,25 +149,6 @@ static Fileattr* listdircontent(char *path, Fileattr *fileattr)
 
     closedir(dirp);
     return fileattr;
-}
-
-static void showfilelist(Fileattr *filelist)
-{
-    if (filelist != NULL)
-    {
-        printf("file : '%s', \t\t last_modified : |%d-%d-%d %d:%d:%d|\t %s", filelist->name,
-           filelist->tmdate.tm_mday, filelist->tmdate.tm_mon, filelist->tmdate.tm_year,
-           filelist->tmdate.tm_hour, filelist->tmdate.tm_min, filelist->tmdate.tm_sec,
-           ctime(&filelist->cdate));
-
-           if (filelist->next != NULL)
-           {
-               double difference = difftime(filelist->next->cdate, filelist->cdate);
-               printf("DIFFERENCE = %10.2lf\n", difference);
-           }
-
-           showfilelist(filelist->next);
-    }
 }
 
 int findinlist(Fileattr *filelist, char nametofind[])
