@@ -14,6 +14,9 @@ static DIR* finddir(char *);
 static Fileattr* listdircontent(char *, Fileattr *);
 static void showfilelist(Fileattr *);
 int findinlist(Fileattr *, char []);
+Fileattr* insertplace(Fileattr *, Fileattr *);
+Fileattr* insertinplace(Fileattr *, Fileattr *, Fileattr *, Fileattr *);
+Fileattr* inserttete(Fileattr *, Fileattr *);
 static void differencebetweenfilescdate(char *, char *);
 
 int main(int argc, char *argv[])
@@ -26,7 +29,7 @@ int main(int argc, char *argv[])
     Fileattr *files = NULL;
 
     files = listdircontent(argv[1], files);
-    files = listdircontent(argv[1], files);
+    //files = listdircontent(argv[1], files);
 
     printf("\n");
     showfilelist(files);
