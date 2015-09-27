@@ -51,6 +51,11 @@ Fileattr* insertinplace(Fileattr *filelist, Fileattr *filetoinsert, Fileattr *fi
     return fileprevious;
 }
 
+Fileattr* insertplace(Fileattr *filelist, Fileattr *filetoinsert)
+{
+    return insertinplace(filelist, filetoinsert, NULL, filelist);
+}
+
 static Fileattr* listdircontent(char *path, Fileattr *fileattr)
 {
     struct dirent *dp;
@@ -58,8 +63,6 @@ static Fileattr* listdircontent(char *path, Fileattr *fileattr)
     struct tm filedate;
     struct stat attrib;
     char filename[25];
-    int nbcount = 0;
-    double diff = 0;
 
     DIR *dirp = finddir(path);
 
@@ -68,7 +71,7 @@ static Fileattr* listdircontent(char *path, Fileattr *fileattr)
         errno = 0;
         if ((dp = readdir(dirp)) != NULL)
         {
-            // TODO : check if the object is a file / if it is a directory => errno != 0
+            // check if the object is a file / if it is a directory => errno != 0
             FILE *f = fopen(dp->d_name, "r");
             if(errno == 0)
             {
@@ -96,7 +99,7 @@ static Fileattr* listdircontent(char *path, Fileattr *fileattr)
 
                     //fileattr = insertplace(fileattr, file);
 
-                    fileattr = insertinplace(fileattr, file, NULL, fileattr);
+                    fileattr = inserttete(fileattr, file);
 
                     printf("File : '%s' ==> added\n", file->name);
 
@@ -128,6 +131,12 @@ static void showfilelist(Fileattr *filelist)
            filelist->tmdate.tm_mday, filelist->tmdate.tm_mon, filelist->tmdate.tm_year,
            filelist->tmdate.tm_hour, filelist->tmdate.tm_min, filelist->tmdate.tm_sec,
            ctime(&filelist->cdate));
+
+           if (filelist->next != NULL)
+           {
+               double difference = difftime(filelist->next->cdate, filelist->cdate);
+               printf("DIFFERENCE = %10.2lf\n", difference);
+           }
 
            showfilelist(filelist->next);
     }
